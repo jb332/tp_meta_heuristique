@@ -87,7 +87,7 @@ public class ResourceOrder extends Encoding {
 
     //version pas opti avec redondance
     public Schedule toSchedule2() throws Exception {
-        long startTime = System.nanoTime();
+        //long startTime = System.nanoTime();
 
         int[][] startTimes = new int[instance.numJobs][instance.numTasks];
 
@@ -97,14 +97,14 @@ public class ResourceOrder extends Encoding {
             }
         }
 
-        System.out.println(System.nanoTime()-startTime);
+        //System.out.println(System.nanoTime()-startTime);
         return new Schedule(instance, startTimes);
     }
 
     //bonne version
     @Override
     public Schedule toSchedule() {
-        long startTime = System.nanoTime();
+        //long startTime = System.nanoTime();
 
         int[][] startTimes = new int[instance.numJobs][instance.numTasks];
         for(int j=0; j<instance.numJobs; j++) {
@@ -151,7 +151,7 @@ public class ResourceOrder extends Encoding {
             }
         }
 
-        System.out.println(System.nanoTime()-startTime);
+        //System.out.println(System.nanoTime()-startTime);
         return new Schedule(instance, startTimes);
     }
 /*

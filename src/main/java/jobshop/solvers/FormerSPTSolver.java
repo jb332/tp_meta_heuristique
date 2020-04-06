@@ -3,16 +3,10 @@ package jobshop.solvers;
 import jobshop.Instance;
 import jobshop.encodings.Task;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 
-public class SPTSolver extends GreedySolver {
+public class FormerSPTSolver extends FormerGreedySolver {
 
-    @Override
-    protected Comparator<Task> useComparator(Instance instance) {
-        return Comparator.comparingInt((Task o) -> instance.duration(o.job, o.task)).reversed();
-    }
-
-    /*
     @Override
     protected Task chooseTask(Instance instance, ArrayList<Task> realizableTasks) {
         Task longestRealizableTask = null;
@@ -28,5 +22,4 @@ public class SPTSolver extends GreedySolver {
 
         return longestRealizableTask;
     }
-    */
 }

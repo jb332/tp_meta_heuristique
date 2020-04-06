@@ -5,7 +5,6 @@ import jobshop.Result;
 import jobshop.Solver;
 import jobshop.encodings.ResourceOrder;
 import jobshop.encodings.Task;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,14 +13,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 
-public abstract class GreedySolver implements Solver {
+public abstract class FormerGreedySolver implements Solver {
 
     final static boolean debug = false;
     static Path file;
 
     static {
         if(debug) {
-            String path = "/home/jb/Bureau/debug2.txt";
+            String path = "/home/jb/Bureau/debug.txt";
 
             file = Paths.get(path);
             //delete the previous version of the file if it exists
@@ -45,10 +44,11 @@ public abstract class GreedySolver implements Solver {
         }
     }
 
-    protected abstract Comparator<Task> useComparator(Instance instance);
+    protected abstract Task chooseTask(Instance instance, ArrayList<Task> realizableTasks);
 
     @Override
     public Result solve(Instance instance, long deadline) {
+
         ResourceOrder sol = new ResourceOrder(instance);
 
         //a matrix containing boolean indicating if a task has been treated or not
@@ -59,7 +59,7 @@ public abstract class GreedySolver implements Solver {
         }
 
         //a list containing the realizable tasks
-        PriorityQueue<Task> realizableTasks = new PriorityQueue<Task>(instance.numTasks, this.useComparator(instance));
+        ArrayList<Task> realizableTasks = new ArrayList<Task>(instance.numTasks);
         //initialize the realizable tasks set with the first tasks of the jobs
         for(int j=0; j<instance.numJobs; j++) {
             realizableTasks.add(new Task(j, 0));
@@ -73,6 +73,7 @@ public abstract class GreedySolver implements Solver {
                 remainingTasks.add(new Task(j, i));
             }
         }
+
 
         int cpt;
         if(debug) {
@@ -100,7 +101,8 @@ public abstract class GreedySolver implements Solver {
                 cpt++;
             }
 
-            Task chosenRealizableTask = realizableTasks.poll();
+
+            Task chosenRealizableTask = chooseTask(instance, realizableTasks);
             if(debug) {
                 write("\nChosen Task : (" + chosenRealizableTask.task + "," + chosenRealizableTask.job + ")");
                 write("\n\n");
@@ -110,7 +112,8 @@ public abstract class GreedySolver implements Solver {
 
             //add the chosen task to resource order
             sol.addTaskToResourceQueue(chosenRealizableTaskMachine, chosenRealizableTask.task, chosenRealizableTask.job);
-
+            //remove the chosen task from the realizable tasks set
+            realizableTasks.remove(chosenRealizableTask);
             //mark the task as treated in the treated tasks matrix
             treatedTasksMatrix[chosenRealizableTask.job][chosenRealizableTask.task] = true;
 
