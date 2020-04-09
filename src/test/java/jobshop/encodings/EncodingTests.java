@@ -84,6 +84,16 @@ public class EncodingTests {
         assert schedAuto.equals(schedMan);
         assert schedMan.isValid();
         assert schedMan.makespan() == 14;
+
+        JobNumbers enc2 = new JobNumbers(instance);
+        enc2.fromSchedule(schedAuto);
+        Schedule newSchedAuto = enc2.toSchedule();
+
+        System.out.println(enc);
+        System.out.println(enc2);
+
+        System.out.println(schedAuto);
+        System.out.println(newSchedAuto);
     }
 
     @Test
@@ -120,6 +130,7 @@ public class EncodingTests {
         Schedule schedMan = new Schedule(instance, times);
         Schedule schedAuto = enc.toSchedule();
         Schedule schedAuto2 = enc.toSchedule2();
+
         // TODO: make it print something meaningful
         // by implementing the toString() method
         System.out.println(schedMan);
@@ -130,6 +141,17 @@ public class EncodingTests {
         assert schedAuto2.equals(schedMan);
         assert schedMan.isValid();
         assert schedMan.makespan() == 12;
+
+        ResourceOrder enc2 = new ResourceOrder(instance);
+        enc2.fromSchedule(schedAuto);
+        Schedule newSchedAuto = enc2.toSchedule();
+
+        System.out.println(enc);
+        System.out.println(enc2);
+
+        System.out.println(schedAuto);
+        System.out.println(newSchedAuto);
+
     }
 
     @Test
@@ -155,5 +177,4 @@ public class EncodingTests {
         assert result.schedule.isValid();
         assert result.schedule.makespan() == sched.makespan(); // should have the same makespan
     }
-
 }

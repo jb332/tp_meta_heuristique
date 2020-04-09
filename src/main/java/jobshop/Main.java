@@ -23,14 +23,19 @@ public class Main {
         solvers = new HashMap<>();
         solvers.put("basic", new BasicSolver());
         solvers.put("random", new RandomSolver());
-        solvers.put("lpt", new LPTSolver());
-        solvers.put("spt", new SPTSolver());
-        solvers.put("lrpt", new LRPTSolver());
+        //solvers.put("lpt", new LPTSolver());
+        //solvers.put("spt", new SPTSolver());
+        //solvers.put("lrpt", new LRPTSolver());
         solvers.put("srpt", new SRPTSolver());
-        solvers.put("flpt", new FormerLPTSolver());
-        solvers.put("fspt", new FormerSPTSolver());
-        solvers.put("flrpt", new FormerLRPTSolver());
-        solvers.put("fsrpt", new FormerSRPTSolver());
+        solvers.put("former-srpt", new FormerSRPTSolver());
+        //solvers.put("est-lpt", new EST_LPTSolver());
+        //solvers.put("est-spt", new EST_SPTSolver());
+        //solvers.put("est-lrpt", new EST_LRPTSolver());
+        solvers.put("est-srpt", new EST_SRPTSolver());
+        //solvers.put("flpt", new FormerLPTSolver());
+        //solvers.put("fspt", new FormerSPTSolver());
+        //solvers.put("flrpt", new FormerLRPTSolver());
+        //solvers.put("fsrpt", new FormerSRPTSolver());
         // add new solvers here
     }
 

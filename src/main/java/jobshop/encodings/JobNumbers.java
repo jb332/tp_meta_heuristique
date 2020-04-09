@@ -4,7 +4,9 @@ import jobshop.Encoding;
 import jobshop.Instance;
 import jobshop.Schedule;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 
 /** Représentation par numéro de job. */
 public class JobNumbers extends Encoding {
@@ -48,6 +50,20 @@ public class JobNumbers extends Encoding {
         }
 
         return new Schedule(instance, startTimes);
+    }
+
+    public void fromSchedule(Schedule schedule) {
+        ArrayList<TaskStartDate> sortedSchedule = new ArrayList<TaskStartDate>(instance.numJobs*instance.numTasks);
+        for(int j=0; j<instance.numJobs; j++) {
+            for(int i=0; i<instance.numTasks; i++) {
+                sortedSchedule.add(new TaskStartDate(j, i, schedule.startTime(j, i)));
+            }
+        }
+        sortedSchedule.sort(Comparator.comparingInt((TaskStartDate o) -> o.startDate));
+        for(TaskStartDate currentTaskStartDate : sortedSchedule) {
+            Task currentTask = currentTaskStartDate.task;
+            jobs[nextToSet++] = currentTask.job;
+        }
     }
 
     @Override

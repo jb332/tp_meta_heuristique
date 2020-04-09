@@ -7,6 +7,7 @@ import jobshop.Schedule;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 
 public class ResourceOrder extends Encoding {
@@ -23,6 +24,7 @@ public class ResourceOrder extends Encoding {
         }
     }
 
+    /*
     public boolean isTaskTreated(Task task) {
         boolean found = false;
         for (int r = 0 ; r < instance.numMachines && !found; r++) {
@@ -36,6 +38,7 @@ public class ResourceOrder extends Encoding {
         }
         return found;
     }
+    */
 
     public void addTaskToResourceQueue(int resource, int task, int job) {
         tasksOrderPerMachine[resource].add(new Task(job, task));
@@ -46,27 +49,23 @@ public class ResourceOrder extends Encoding {
     }
 
     private Task getPreviousTaskResource(Task task) {
-        for(int r = 0; r < instance.numMachines; r++) {
-            for(int i = 0; i < tasksOrderPerMachine[r].size(); i++) {
-                if(tasksOrderPerMachine[r].get(i).equals(task)) {
-                    if(i > 0) {
-                        return tasksOrderPerMachine[r].get(i-1);
-                    } else {
-                        return null;
-                    }
-                }
+        int r = instance.machine(task.job, task.task);
+        int i = tasksOrderPerMachine[r].indexOf(task);
+        if(i > 0) {
+            return tasksOrderPerMachine[r].get(i - 1);
+        } else if(i == 0) {
+            return null;
+        } else {
+            //if the task is not found, it means it is the first function call and task is a realizable task
+            if(tasksOrderPerMachine[r].size() > 0) {
+                return tasksOrderPerMachine[r].get(tasksOrderPerMachine[r].size() - 1);
+            } else {
+                return null;
             }
         }
-        System.err.println("Task not found in the order matrix");
-        System.exit(-1);
-        return null; //never reached
     }
 
-    private int getDuration(Task task) {
-        return instance.duration(task.job, task.task);
-    }
-
-    private int computeTaskStartDate(Task task) throws Exception {
+    public int computeTaskStartDate(Task task) {
         Task previousTaskResource = getPreviousTaskResource(task);
         Task previousTaskJob = getPreviousTaskJob(task);
 
@@ -74,19 +73,22 @@ public class ResourceOrder extends Encoding {
             if(previousTaskJob == null) {
                 return 0;
             } else {
-                return getDuration(previousTaskJob) + computeTaskStartDate(previousTaskJob);
+                return instance.duration(previousTaskJob.job, previousTaskJob.task) + computeTaskStartDate(previousTaskJob);
             }
         } else {
             if( previousTaskJob == null) {
-                return getDuration(previousTaskResource) + computeTaskStartDate(previousTaskResource);
+                return instance.duration(previousTaskResource.job, previousTaskResource.task) + computeTaskStartDate(previousTaskResource);
             } else {
-                return Integer.max(getDuration(previousTaskResource) + computeTaskStartDate(previousTaskResource), getDuration(previousTaskJob) + computeTaskStartDate(previousTaskJob));
+                return Integer.max(
+                        instance.duration(previousTaskResource.job, previousTaskResource.task) + computeTaskStartDate(previousTaskResource),
+                        instance.duration(previousTaskJob.job, previousTaskJob.task) + computeTaskStartDate(previousTaskJob)
+                );
             }
         }
     }
 
     //version pas opti avec redondance
-    public Schedule toSchedule2() throws Exception {
+    public Schedule toSchedule2() {
         //long startTime = System.nanoTime();
 
         int[][] startTimes = new int[instance.numJobs][instance.numTasks];
@@ -101,7 +103,6 @@ public class ResourceOrder extends Encoding {
         return new Schedule(instance, startTimes);
     }
 
-    //bonne version
     @Override
     public Schedule toSchedule() {
         //long startTime = System.nanoTime();
@@ -131,17 +132,17 @@ public class ResourceOrder extends Encoding {
                         startTimes[currentTask.job][currentTask.task] = 0;
                     } else if(startTimes[previousTaskJob.job][previousTaskJob.task] != -1) {
                         iter.remove();
-                        startTimes[currentTask.job][currentTask.task] = startTimes[previousTaskJob.job][previousTaskJob.task] + getDuration(previousTaskJob);
+                        startTimes[currentTask.job][currentTask.task] = startTimes[previousTaskJob.job][previousTaskJob.task] + instance.duration(previousTaskJob.job, previousTaskJob.task);
                     }
                 } else if(startTimes[previousTaskResource.job][previousTaskResource.task] != -1){
                     if(previousTaskJob == null) {
                         iter.remove();
-                        startTimes[currentTask.job][currentTask.task] = startTimes[previousTaskResource.job][previousTaskResource.task] + getDuration(previousTaskResource);
+                        startTimes[currentTask.job][currentTask.task] = startTimes[previousTaskResource.job][previousTaskResource.task] + instance.duration(previousTaskResource.job, previousTaskResource.task);
                     } else if(startTimes[previousTaskJob.job][previousTaskJob.task] != -1){
                         iter.remove();
                         startTimes[currentTask.job][currentTask.task] = Integer.max(
-                                startTimes[previousTaskJob.job][previousTaskJob.task] + getDuration(previousTaskJob),
-                                startTimes[previousTaskResource.job][previousTaskResource.task] + getDuration(previousTaskResource)
+                                startTimes[previousTaskJob.job][previousTaskJob.task] + instance.duration(previousTaskJob.job, previousTaskJob.task),
+                                startTimes[previousTaskResource.job][previousTaskResource.task] + instance.duration(previousTaskResource.job, previousTaskResource.task)
                         );
                     }
                 }
@@ -154,43 +155,32 @@ public class ResourceOrder extends Encoding {
         //System.out.println(System.nanoTime()-startTime);
         return new Schedule(instance, startTimes);
     }
-/*
+
     public void fromSchedule(Schedule schedule) {
-        ArrayList<Task> queue = new ArrayList<Task>(instance.numJobs * instance.numTasks);
-        for(int i=0; i<instance.numTasks; i++) {
-            for(int j=0; j<instance.numJobs; j++) {
-                queue.add(new Task(j, i));
+        ArrayList<TaskStartDate> sortedSchedule = new ArrayList<TaskStartDate>(instance.numJobs*instance.numTasks);
+        for(int j=0; j<instance.numJobs; j++) {
+            for(int i=0; i<instance.numTasks; i++) {
+                sortedSchedule.add(new TaskStartDate(j, i, schedule.startTime(j, i)));
             }
         }
-
-        Iterator<Task> iter = queue.iterator();
-        while(queue.size() > 0) {
-            if(iter.hasNext()) {
-                Task currentTask = iter.next();
-            } else {
-                //reset the iterator to keep looping until there is no more element in the queue
-                iter = queue.iterator();
-            }
+        sortedSchedule.sort(Comparator.comparingInt((TaskStartDate o) -> o.startDate));
+        for(TaskStartDate currentTaskStartDate : sortedSchedule) {
+            Task currentTask = currentTaskStartDate.task;
+            int currentTaskMachine = instance.machine(currentTask.job, currentTask.task);
+            addTaskToResourceQueue(currentTaskMachine, currentTask.task, currentTask.job);
         }
-
-
-
-        for(int i=0; i<instance.numTasks; i++) {
-            for(int j=0; j<instance.numJobs; j++) {
-                int currentStartTime = schedule.startTime(j, i);
-                //this task has no predecessor in the job
-                if(i==0) {
-                    //so if its start date is different from zero it means it has a resource predecessor
-                    if(currentStartTime != 0) {
-
-                    }
-                } else {
-
-                }
-            }
-        }
-
-
     }
- */
+
+    public String toString() {
+        StringBuilder strBuild = new StringBuilder();
+        for(int r = 0; r < instance.numMachines; r++) {
+            strBuild.append("M"+r+" : ");
+            for(Task currentTask : tasksOrderPerMachine[r]) {
+                strBuild.append("("+currentTask.job+","+currentTask.task+") ");
+            }
+            strBuild.append("\n");
+        }
+        strBuild.append("\n");
+        return strBuild.toString();
+    }
 }

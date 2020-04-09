@@ -45,7 +45,7 @@ public abstract class GreedySolver implements Solver {
         }
     }
 
-    protected abstract Comparator<Task> useComparator(Instance instance);
+    protected abstract Comparator<Task> getComparator(Instance instance, ResourceOrder sol);
 
     @Override
     public Result solve(Instance instance, long deadline) {
@@ -59,7 +59,7 @@ public abstract class GreedySolver implements Solver {
         }
 
         //a list containing the realizable tasks
-        PriorityQueue<Task> realizableTasks = new PriorityQueue<Task>(instance.numTasks, this.useComparator(instance));
+        PriorityQueue<Task> realizableTasks = new PriorityQueue<Task>(instance.numTasks, this.getComparator(instance, sol));
         //initialize the realizable tasks set with the first tasks of the jobs
         for(int j=0; j<instance.numJobs; j++) {
             realizableTasks.add(new Task(j, 0));
