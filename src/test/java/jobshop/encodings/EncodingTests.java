@@ -129,16 +129,16 @@ public class EncodingTests {
         };
         Schedule schedMan = new Schedule(instance, times);
         Schedule schedAuto = enc.toSchedule();
-        Schedule schedAuto2 = enc.toSchedule2();
+        //Schedule schedAuto2 = enc.toSchedule2();
 
         // TODO: make it print something meaningful
         // by implementing the toString() method
         System.out.println(schedMan);
         System.out.println(schedAuto);
-        System.out.println(schedAuto2);
+        //System.out.println(schedAuto2);
 
         assert schedAuto.equals(schedMan);
-        assert schedAuto2.equals(schedMan);
+        //assert schedAuto2.equals(schedMan);
         assert schedMan.isValid();
         assert schedMan.makespan() == 12;
 

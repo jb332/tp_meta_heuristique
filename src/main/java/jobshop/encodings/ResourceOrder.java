@@ -65,6 +65,7 @@ public class ResourceOrder extends Encoding {
         }
     }
 
+    /*
     public int computeTaskStartDate(Task task) {
         Task previousTaskResource = getPreviousTaskResource(task);
         Task previousTaskJob = getPreviousTaskJob(task);
@@ -102,6 +103,7 @@ public class ResourceOrder extends Encoding {
         //System.out.println(System.nanoTime()-startTime);
         return new Schedule(instance, startTimes);
     }
+    */
 
     @Override
     public Schedule toSchedule() {

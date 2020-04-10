@@ -23,19 +23,14 @@ public class Main {
         solvers = new HashMap<>();
         solvers.put("basic", new BasicSolver());
         solvers.put("random", new RandomSolver());
-        //solvers.put("lpt", new LPTSolver());
-        //solvers.put("spt", new SPTSolver());
-        //solvers.put("lrpt", new LRPTSolver());
-        solvers.put("srpt", new SRPTSolver());
-        solvers.put("former-srpt", new FormerSRPTSolver());
-        //solvers.put("est-lpt", new EST_LPTSolver());
-        //solvers.put("est-spt", new EST_SPTSolver());
-        //solvers.put("est-lrpt", new EST_LRPTSolver());
-        solvers.put("est-srpt", new EST_SRPTSolver());
-        //solvers.put("flpt", new FormerLPTSolver());
-        //solvers.put("fspt", new FormerSPTSolver());
-        //solvers.put("flrpt", new FormerLRPTSolver());
-        //solvers.put("fsrpt", new FormerSRPTSolver());
+        solvers.put("lpt", new GreedySolver(false, false, true));
+        solvers.put("spt", new GreedySolver(false, false, false));
+        solvers.put("lrpt", new GreedySolver(false, true, true));
+        solvers.put("srpt", new GreedySolver(false, true, false));
+        solvers.put("est-lpt", new GreedySolver(true, false, true));
+        solvers.put("est-spt", new GreedySolver(true, false, false));
+        solvers.put("est-lrpt", new GreedySolver(true, true, true));
+        solvers.put("est-srpt", new GreedySolver(true, true, false));
         // add new solvers here
     }
 
