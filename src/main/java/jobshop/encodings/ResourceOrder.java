@@ -24,6 +24,17 @@ public class ResourceOrder extends Encoding {
         }
     }
 
+    public ResourceOrder(ResourceOrder order) {
+        this(order.instance);
+        for (int r = 0; r < instance.numMachines; r++) {
+            this.tasksOrderPerMachine[r] = (ArrayList<Task>) order.tasksOrderPerMachine[r].clone();
+        }
+    }
+
+    public ResourceOrder copy() {
+        return new ResourceOrder(this);
+    }
+
     /*
     public boolean isTaskTreated(Task task) {
         boolean found = false;
