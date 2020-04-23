@@ -3,10 +3,7 @@ package jobshop;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 import jobshop.solvers.*;
@@ -21,19 +18,40 @@ public class Main {
     /** All solvers available in this program */
     private static HashMap<String, Solver> solvers;
     static {
+        // modify parameters here
+        int tabooDuration = 20;
+        int maxIterations = Integer.MAX_VALUE;
+
         solvers = new HashMap<>();
         solvers.put("basic", new BasicSolver());
         solvers.put("random", new RandomSolver());
-        solvers.put("lpt", new GreedySolver(false, false, true));
-        solvers.put("spt", new GreedySolver(false, false, false));
-        solvers.put("lrpt", new GreedySolver(false, true, true));
-        solvers.put("srpt", new GreedySolver(false, true, false));
-        solvers.put("est-lpt", new GreedySolver(true, false, true));
-        solvers.put("est-spt", new GreedySolver(true, false, false));
-        solvers.put("est-lrpt", new GreedySolver(true, true, true));
-        solvers.put("est-srpt", new GreedySolver(true, true, false));
-        solvers.put("desc-est-srpt", new DescentSolver(true, true, false));
-        solvers.put("taboo-est-srpt", new TabooSolver(20, Integer.MAX_VALUE, true, true, false));
+
+        solvers.put("lpt", new GreedySolver(false, false, false));
+        solvers.put("spt", new GreedySolver(false, false, true));
+        solvers.put("lrpt", new GreedySolver(false, true, false));
+        solvers.put("srpt", new GreedySolver(false, true, true));
+        solvers.put("est-lpt", new GreedySolver(true, false, false));
+        solvers.put("est-spt", new GreedySolver(true, false, true));
+        solvers.put("est-lrpt", new GreedySolver(true, true, false));
+        solvers.put("est-srpt", new GreedySolver(true, true, true));
+
+        solvers.put("desc-lpt", new DescentSolver(false, false, false));
+        solvers.put("desc-spt", new DescentSolver(false, false, true));
+        solvers.put("desc-lrpt", new DescentSolver(false, true, false));
+        solvers.put("desc-srpt", new DescentSolver(false, true, true));
+        solvers.put("desc-est-lpt", new DescentSolver(true, false, false));
+        solvers.put("desc-est-spt", new DescentSolver(true, false, true));
+        solvers.put("desc-est-lrpt", new DescentSolver(true, true, false));
+        solvers.put("desc-est-srpt", new DescentSolver(true, true, true));
+
+        solvers.put("taboo-lpt", new TabooSolver(tabooDuration, maxIterations, false, false, false));
+        solvers.put("taboo-spt", new TabooSolver(tabooDuration, maxIterations, false, false, true));
+        solvers.put("taboo-lrpt", new TabooSolver(tabooDuration, maxIterations, false, true, false));
+        solvers.put("taboo-srpt", new TabooSolver(tabooDuration, maxIterations, false, true, true));
+        solvers.put("taboo-est-lpt", new TabooSolver(tabooDuration, maxIterations, true, false, false));
+        solvers.put("taboo-est-spt", new TabooSolver(tabooDuration, maxIterations, true, false, true));
+        solvers.put("taboo-est-lrpt", new TabooSolver(tabooDuration, maxIterations, true, true, false));
+        solvers.put("taboo-est-srpt", new TabooSolver(tabooDuration, maxIterations, true, true, true));
         // add new solvers here
     }
 
