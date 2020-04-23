@@ -33,6 +33,7 @@ public class Main {
         solvers.put("est-lrpt", new GreedySolver(true, true, true));
         solvers.put("est-srpt", new GreedySolver(true, true, false));
         solvers.put("desc-est-srpt", new DescentSolver(true, true, false));
+        solvers.put("taboo-est-srpt", new TabooSolver(20, Integer.MAX_VALUE, true, true, false));
         // add new solvers here
     }
 
@@ -67,6 +68,7 @@ public class Main {
         PrintStream output = System.out;
 
         long solveTimeMs = ns.getLong("timeout") * 1000;
+        System.out.println(solveTimeMs);
 
         List<String> solversToTest = ns.getList("solver");
         for(String solverName : solversToTest) {

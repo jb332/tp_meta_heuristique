@@ -15,6 +15,10 @@ public class ResourceOrder extends Encoding {
     /** A matrix ordering (task, job) couples by machine numbers. */
     public final ArrayList<Task>[] tasksOrderPerMachine;
 
+    /**
+     * Blank constructor
+     * @param instance
+     */
     public ResourceOrder(Instance instance) {
         super(instance);
 
@@ -24,6 +28,19 @@ public class ResourceOrder extends Encoding {
         }
     }
 
+    /**
+     * Constructor from schedule
+     * @param schedule
+     */
+    public ResourceOrder(Schedule schedule) {
+        this(schedule.pb);
+        this.fromSchedule(schedule);
+    }
+
+    /**
+     * Copy constructor
+     * @param order
+     */
     public ResourceOrder(ResourceOrder order) {
         this(order.instance);
         for (int r = 0; r < instance.numMachines; r++) {
@@ -34,22 +51,6 @@ public class ResourceOrder extends Encoding {
     public ResourceOrder copy() {
         return new ResourceOrder(this);
     }
-
-    /*
-    public boolean isTaskTreated(Task task) {
-        boolean found = false;
-        for (int r = 0 ; r < instance.numMachines && !found; r++) {
-            Iterator<Task> iter = tasksOrderPerMachine[r].iterator();
-            while(iter.hasNext() && !found) {
-                Task currentTask = iter.next();
-                if(task.equals(currentTask)) {
-                    found = true;
-                }
-            }
-        }
-        return found;
-    }
-    */
 
     public void addTaskToResourceQueue(int resource, int task, int job) {
         tasksOrderPerMachine[resource].add(new Task(job, task));
@@ -75,46 +76,6 @@ public class ResourceOrder extends Encoding {
             }
         }
     }
-
-    /*
-    public int computeTaskStartDate(Task task) {
-        Task previousTaskResource = getPreviousTaskResource(task);
-        Task previousTaskJob = getPreviousTaskJob(task);
-
-        if(previousTaskResource == null) {
-            if(previousTaskJob == null) {
-                return 0;
-            } else {
-                return instance.duration(previousTaskJob.job, previousTaskJob.task) + computeTaskStartDate(previousTaskJob);
-            }
-        } else {
-            if( previousTaskJob == null) {
-                return instance.duration(previousTaskResource.job, previousTaskResource.task) + computeTaskStartDate(previousTaskResource);
-            } else {
-                return Integer.max(
-                        instance.duration(previousTaskResource.job, previousTaskResource.task) + computeTaskStartDate(previousTaskResource),
-                        instance.duration(previousTaskJob.job, previousTaskJob.task) + computeTaskStartDate(previousTaskJob)
-                );
-            }
-        }
-    }
-
-    //version pas opti avec redondance
-    public Schedule toSchedule2() {
-        //long startTime = System.nanoTime();
-
-        int[][] startTimes = new int[instance.numJobs][instance.numTasks];
-
-        for(int j=0; j<instance.numJobs; j++) {
-            for(int i=0; i<instance.numTasks; i++) {
-                startTimes[j][i] = computeTaskStartDate(new Task(j, i));
-            }
-        }
-
-        //System.out.println(System.nanoTime()-startTime);
-        return new Schedule(instance, startTimes);
-    }
-    */
 
     @Override
     public Schedule toSchedule() {
@@ -195,5 +156,19 @@ public class ResourceOrder extends Encoding {
         }
         strBuild.append("\n");
         return strBuild.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        ResourceOrder other = (ResourceOrder) o;
+        boolean equals = this.instance.equals(other.instance);
+        for(int r = 0; r < instance.numMachines && equals; r++) {
+            Iterator<Task> iter = this.tasksOrderPerMachine[r].iterator();
+            Iterator<Task> iterOther = other.tasksOrderPerMachine[r].iterator();
+            while(iter.hasNext() && equals) {
+                equals = iter.next().equals(iterOther.next());
+            }
+        }
+        return equals;
     }
 }

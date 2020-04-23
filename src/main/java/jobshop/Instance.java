@@ -78,8 +78,8 @@ public class Instance {
     }
 
     public static boolean areMatrixEqual(int[][] a, int[][] b) {
-        boolean areMatrixEqual = true;
-        for(int i=0; i<a.length; i++) {
+        boolean areMatrixEqual = a.length == b.length;
+        for(int i=0; i<a.length && areMatrixEqual; i++) {
             areMatrixEqual &= Arrays.equals(a[i], b[i]);
         }
         return areMatrixEqual;
@@ -88,9 +88,7 @@ public class Instance {
     public boolean equals(Object obj) {
         Instance otherInstance = (Instance)obj;
         return
-            numJobs == otherInstance.numJobs
-            && numTasks == otherInstance.numTasks
-            && numMachines == otherInstance.numMachines
+            numMachines == otherInstance.numMachines
             && areMatrixEqual(durations, otherInstance.durations)
             && areMatrixEqual(machines, otherInstance.machines);
     }

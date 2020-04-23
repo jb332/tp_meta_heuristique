@@ -80,6 +80,13 @@ public class DescentSolver implements Solver {
             order.tasksOrderPerMachine[this.machine].set(this.t1, task2);
             order.tasksOrderPerMachine[this.machine].set(this.t2, task1);
         }
+
+        public List<Task> getTasksToSwap(ResourceOrder order) {
+            List<Task> tasks = new ArrayList<Task>(2);
+            tasks.add(order.tasksOrderPerMachine[this.machine].get(this.t1));
+            tasks.add(order.tasksOrderPerMachine[this.machine].get(this.t2));
+            return tasks;
+        }
     }
 
     boolean earliestStartTimeMode;
@@ -87,7 +94,7 @@ public class DescentSolver implements Solver {
     boolean remainingProcessingTimeMode;
 
     /**
-     * 
+     *
      * @param earliestStartTimeMode This argument specifies the greedy solver used. To learn more, go to GreedySolver constructor documentation
      * @param remainingProcessingTimeMode Idem
      * @param crescentOrder Idem
@@ -106,11 +113,10 @@ public class DescentSolver implements Solver {
         ResourceOrder bestSolution = null;
         int bestMakespan = Integer.MAX_VALUE;
 
-        ResourceOrder bestNeighborSolution = new ResourceOrder(instance);
-        bestNeighborSolution.fromSchedule(solver.solve(instance, deadline).schedule);
+        ResourceOrder bestNeighborSolution = new ResourceOrder(solver.solve(instance, -1).schedule);
         int bestNeighborMakeSpan = bestNeighborSolution.toSchedule().makespan();
 
-        while(bestNeighborMakeSpan < bestMakespan) {
+        while(bestNeighborMakeSpan < bestMakespan && System.currentTimeMillis() < deadline) {
             bestSolution = bestNeighborSolution;
             bestMakespan = bestNeighborMakeSpan;
 
@@ -129,11 +135,15 @@ public class DescentSolver implements Solver {
             }
         }
 
-        return new Result(instance, bestSolution.toSchedule(), Result.ExitCause.Blocked);
+        Result.ExitCause exitCause = Result.ExitCause.Blocked;
+        if(System.currentTimeMillis() >= deadline) {
+            exitCause = Result.ExitCause.Timeout;
+        }
+        return new Result(instance, bestSolution.toSchedule(), exitCause);
     }
 
     /** Returns a list of all blocks of the critical path. */
-    List<Block> blocksOfCriticalPath(ResourceOrder order) {
+    static List<Block> blocksOfCriticalPath(ResourceOrder order) {
         List<Task> criticalPath = order.toSchedule().criticalPath();
         List<Block> blocks = new ArrayList<>(criticalPath.size() / 2);
 
@@ -162,7 +172,7 @@ public class DescentSolver implements Solver {
     }
 
     /** For a given block, return the possible swaps for the Nowicki and Smutnicki neighborhood */
-    List<Swap> neighbors(Block block) {
+    static List<Swap> neighbors(Block block) {
         int blockSize = block.lastTask - block.firstTask + 1;
         List<Swap> swapList;
         if(blockSize == 2) {
