@@ -54,7 +54,6 @@ public class TabooSolver implements Solver {
         int bestMakespan = bestSolution.toSchedule().makespan();
 
         ResourceOrder currentSolution = bestSolution;
-        int currentMakeSpan = bestMakespan;
 
         //implicitly filled with zeros
         int[][] tabooSolutions = new int[instance.numJobs * instance.numTasks][instance.numJobs * instance.numTasks];
@@ -72,31 +71,24 @@ public class TabooSolver implements Solver {
             for (DescentSolver.Block currentBlock : blocks) {
                 List<DescentSolver.Swap> blockNeighbors = DescentSolver.neighbors(currentBlock);
                 for (DescentSolver.Swap currentSwap : blockNeighbors) {
-                    if(!isTaboo(tabooSolutions, currentSwap, currentSolution, k)) {
-                        ResourceOrder currentNeighborSolution = currentSolution.copy();
-                        currentSwap.applyOn(currentNeighborSolution);
-                        int currentNeighborMakeSpan = currentNeighborSolution.toSchedule().makespan();
-                        if (
-                                currentNeighborMakeSpan < bestMakespan ||
-                                (currentNeighborMakeSpan < bestNeighborMakeSpan && !isTaboo(tabooSolutions, currentSwap, currentSolution, k))
-                        ) {
-                            bestNeighborSwap = currentSwap;
-                            bestNeighborSolution = currentNeighborSolution;
-                            bestNeighborMakeSpan = currentNeighborMakeSpan;
-                        }
+                    ResourceOrder currentNeighborSolution = currentSolution.copy();
+                    currentSwap.applyOn(currentNeighborSolution);
+                    int currentNeighborMakeSpan = currentNeighborSolution.toSchedule().makespan();
+                    if (
+                            (currentNeighborMakeSpan < bestMakespan && currentNeighborMakeSpan < bestNeighborMakeSpan) ||
+                            (currentNeighborMakeSpan < bestNeighborMakeSpan && !isTaboo(tabooSolutions, currentSwap, currentSolution, k))
+                    ) {
+                        bestNeighborSwap = currentSwap;
+                        bestNeighborSolution = currentNeighborSolution;
+                        bestNeighborMakeSpan = currentNeighborMakeSpan;
                     }
                 }
             }
 
-            if(bestNeighborSolution == null) {
-                bestNeighborSolution = currentSolution;
-                bestNeighborMakeSpan = currentMakeSpan;
-
-            } else {
+            if(bestNeighborSolution != null) {
                 setTaboo(tabooSolutions, bestNeighborSwap, currentSolution, k);
 
                 currentSolution = bestNeighborSolution;
-                currentMakeSpan = bestNeighborMakeSpan;
 
                 if (bestNeighborMakeSpan < bestMakespan) {
                     bestSolution = bestNeighborSolution;

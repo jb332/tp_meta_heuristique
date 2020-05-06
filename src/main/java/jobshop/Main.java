@@ -1,9 +1,13 @@
 package jobshop;
 
+import java.awt.*;
 import java.io.PrintStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 
 
 import jobshop.solvers.*;
@@ -17,42 +21,59 @@ public class Main {
 
     /** All solvers available in this program */
     private static HashMap<String, Solver> solvers;
+
+    private static Constructor getConstructor(String className) {
+        Constructor constructor = null;
+        try {
+            Class solverClass = Class.forName(className);
+            constructor = solverClass.getDeclaredConstructors()[0];
+        } catch (ClassNotFoundException e) {}
+        return constructor;
+    }
+
     static {
         // modify parameters here
         int tabooDuration = 20;
-        int maxIterations = Integer.MAX_VALUE;
+        int maxIterations = Integer.MAX_VALUE; // the limit will be on the deadline, bad setting for testing because it is too random
 
         solvers = new HashMap<>();
         solvers.put("basic", new BasicSolver());
         solvers.put("random", new RandomSolver());
 
-        solvers.put("lpt", new GreedySolver(false, false, false));
-        solvers.put("spt", new GreedySolver(false, false, true));
-        solvers.put("lrpt", new GreedySolver(false, true, false));
-        solvers.put("srpt", new GreedySolver(false, true, true));
-        solvers.put("est-lpt", new GreedySolver(true, false, false));
-        solvers.put("est-spt", new GreedySolver(true, false, true));
-        solvers.put("est-lrpt", new GreedySolver(true, true, false));
-        solvers.put("est-srpt", new GreedySolver(true, true, true));
-
-        solvers.put("desc-lpt", new DescentSolver(false, false, false));
-        solvers.put("desc-spt", new DescentSolver(false, false, true));
-        solvers.put("desc-lrpt", new DescentSolver(false, true, false));
-        solvers.put("desc-srpt", new DescentSolver(false, true, true));
-        solvers.put("desc-est-lpt", new DescentSolver(true, false, false));
-        solvers.put("desc-est-spt", new DescentSolver(true, false, true));
-        solvers.put("desc-est-lrpt", new DescentSolver(true, true, false));
-        solvers.put("desc-est-srpt", new DescentSolver(true, true, true));
-
-        solvers.put("taboo-lpt", new TabooSolver(tabooDuration, maxIterations, false, false, false));
-        solvers.put("taboo-spt", new TabooSolver(tabooDuration, maxIterations, false, false, true));
-        solvers.put("taboo-lrpt", new TabooSolver(tabooDuration, maxIterations, false, true, false));
-        solvers.put("taboo-srpt", new TabooSolver(tabooDuration, maxIterations, false, true, true));
-        solvers.put("taboo-est-lpt", new TabooSolver(tabooDuration, maxIterations, true, false, false));
-        solvers.put("taboo-est-spt", new TabooSolver(tabooDuration, maxIterations, true, false, true));
-        solvers.put("taboo-est-lrpt", new TabooSolver(tabooDuration, maxIterations, true, true, false));
-        solvers.put("taboo-est-srpt", new TabooSolver(tabooDuration, maxIterations, true, true, true));
-        // add new solvers here
+        Class[] solverClasses = {GreedySolver.class, DescentSolver.class, TabooSolver.class};
+        for(int i = 0; i < solverClasses.length; i++) {
+            Constructor constructor = solverClasses[i].getDeclaredConstructors()[0];
+            boolean isTabooSolver = solverClasses[i].equals(TabooSolver.class);
+            Object[] parameters = new Object[isTabooSolver ? 5 : 3];
+            if(isTabooSolver) {
+                parameters[0] = tabooDuration;
+                parameters[1] = maxIterations;
+            }
+            for (int earliestStartTimeMode = 0; earliestStartTimeMode < 2; earliestStartTimeMode++) {
+                for (int remainingProcessingTimeMode = 0; remainingProcessingTimeMode < 2; remainingProcessingTimeMode++) {
+                    for (int crescentOrder = 0; crescentOrder < 2; crescentOrder++) {
+                        parameters[parameters.length-3] = earliestStartTimeMode == 1;
+                        parameters[parameters.length-2] = remainingProcessingTimeMode == 1;
+                        parameters[parameters.length-1] = crescentOrder == 1;
+                        try {
+                            Solver solver = (Solver)constructor.newInstance(parameters);
+                            String solverName =
+                                    (solverClasses[i].equals(GreedySolver.class) ? "" : solverClasses[i].getSimpleName().toLowerCase().substring(0, 4) + "-") +
+                                    (earliestStartTimeMode == 1 ? "est-" : "") +
+                                    ((crescentOrder == 1) ? "s" : "l") +
+                                    ((remainingProcessingTimeMode == 1) ? "r" : "") +
+                                    "pt";
+                            solvers.put(solverName, solver);
+                        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {}
+                    }
+                }
+            }
+        }
+        /* solvers :
+         *    - greedy : "lpt", "spt", "lrpt", "srpt", "est-lpt", "est-spt", "est-lrpt", "est-srpt"
+         *    - descent : "desc-lpt", "desc-spt", "desc-lrpt", "desc-srpt", "desc-est-lpt", "desc-est-spt", "desc-est-lrpt", "desc-est-srpt"
+         *    - taboo : "tabo-lpt", "tabo-spt", "tabo-lrpt", "tabo-srpt", "tabo-est-lpt", "tabo-est-spt", "tabo-est-lrpt", "tabo-est-srpt"
+         */
     }
 
 

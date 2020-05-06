@@ -12,7 +12,7 @@ import java.util.Iterator;
 
 public class ResourceOrder extends Encoding {
 
-    /** A matrix ordering (task, job) couples by machine numbers. */
+    /** A matrix ordering (task, job) couples for each machine number. */
     public final ArrayList<Task>[] tasksOrderPerMachine;
 
     /**
