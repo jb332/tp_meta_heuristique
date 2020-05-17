@@ -65,7 +65,7 @@ public class TabooSolver implements Solver {
 
             DescentSolver.Swap bestNeighborSwap = null;
             ResourceOrder bestNeighborSolution = null;
-            int bestNeighborMakeSpan = Integer.MAX_VALUE;
+            int bestNeighborMakespan = Integer.MAX_VALUE;
 
             List<DescentSolver.Block> blocks = DescentSolver.blocksOfCriticalPath(currentSolution);
             for (DescentSolver.Block currentBlock : blocks) {
@@ -73,14 +73,14 @@ public class TabooSolver implements Solver {
                 for (DescentSolver.Swap currentSwap : blockNeighbors) {
                     ResourceOrder currentNeighborSolution = currentSolution.copy();
                     currentSwap.applyOn(currentNeighborSolution);
-                    int currentNeighborMakeSpan = currentNeighborSolution.toSchedule().makespan();
+                    int currentNeighborMakespan = currentNeighborSolution.toSchedule().makespan();
                     if (
-                            (currentNeighborMakeSpan < bestMakespan && currentNeighborMakeSpan < bestNeighborMakeSpan) ||
-                            (currentNeighborMakeSpan < bestNeighborMakeSpan && !isTaboo(tabooSolutions, currentSwap, currentSolution, k))
+                            currentNeighborMakespan < bestNeighborMakespan &&
+                            (currentNeighborMakespan < bestMakespan || !isTaboo(tabooSolutions, currentSwap, currentSolution, k))
                     ) {
                         bestNeighborSwap = currentSwap;
                         bestNeighborSolution = currentNeighborSolution;
-                        bestNeighborMakeSpan = currentNeighborMakeSpan;
+                        bestNeighborMakespan = currentNeighborMakespan;
                     }
                 }
             }
@@ -90,9 +90,9 @@ public class TabooSolver implements Solver {
 
                 currentSolution = bestNeighborSolution;
 
-                if (bestNeighborMakeSpan < bestMakespan) {
+                if (bestNeighborMakespan < bestMakespan) {
                     bestSolution = bestNeighborSolution;
-                    bestMakespan = bestNeighborMakeSpan;
+                    bestMakespan = bestNeighborMakespan;
                 }
             }
         }

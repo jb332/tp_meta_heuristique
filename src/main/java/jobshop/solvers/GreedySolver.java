@@ -43,6 +43,7 @@ public class GreedySolver implements Solver {
         }
     }
 
+    //i hope java handles closures, and that the pointer "times" is going to be copied in the lambda function
     private Comparator<Task> getComparator(ResourceOrder sol, int[][] times) {
         if(earliestStartTimeMode) {
             return (Task o1, Task o2) -> {
@@ -59,7 +60,7 @@ public class GreedySolver implements Solver {
     }
 
     private static void setEarliestTaskStartDate(Task task, ResourceOrder sol, int[][] startTimes) {
-        int taskRes = sol.instance.machine(task.job, task.task);
+        int taskRes = sol.instance.machine(task);
         Task previousTaskResource = null;
         if(sol.tasksOrderPerMachine[taskRes].size() > 0) {
             previousTaskResource = sol.tasksOrderPerMachine[taskRes].get(sol.tasksOrderPerMachine[taskRes].size() - 1);
@@ -70,15 +71,15 @@ public class GreedySolver implements Solver {
             if (previousTaskJob == null) {
                 startTimes[task.job][task.task] = 0;
             } else if (startTimes[previousTaskJob.job][previousTaskJob.task] != -1) {
-                startTimes[task.job][task.task] = startTimes[previousTaskJob.job][previousTaskJob.task] + sol.instance.duration(previousTaskJob.job, previousTaskJob.task);
+                startTimes[task.job][task.task] = startTimes[previousTaskJob.job][previousTaskJob.task] + sol.instance.duration(previousTaskJob);
             }
         } else if (startTimes[previousTaskResource.job][previousTaskResource.task] != -1) {
             if (previousTaskJob == null) {
-                startTimes[task.job][task.task] = startTimes[previousTaskResource.job][previousTaskResource.task] + sol.instance.duration(previousTaskResource.job, previousTaskResource.task);
+                startTimes[task.job][task.task] = startTimes[previousTaskResource.job][previousTaskResource.task] + sol.instance.duration(previousTaskResource);
             } else if (startTimes[previousTaskJob.job][previousTaskJob.task] != -1) {
                 startTimes[task.job][task.task] = Integer.max(
-                        startTimes[previousTaskJob.job][previousTaskJob.task] + sol.instance.duration(previousTaskJob.job, previousTaskJob.task),
-                        startTimes[previousTaskResource.job][previousTaskResource.task] + sol.instance.duration(previousTaskResource.job, previousTaskResource.task)
+                        startTimes[previousTaskJob.job][previousTaskJob.task] + sol.instance.duration(previousTaskJob),
+                        startTimes[previousTaskResource.job][previousTaskResource.task] + sol.instance.duration(previousTaskResource)
                 );
             }
         }
@@ -108,8 +109,9 @@ public class GreedySolver implements Solver {
             }
         }
 
-        //a list containing the realizable tasks
-        PriorityQueue<Task> realizableTasks = new PriorityQueue<Task>(instance.numTasks, this.getComparator(sol, startTimes));
+        //a list (heap actually) containing the realizable tasks
+        Comparator<Task> comparator = this.getComparator(sol, startTimes);
+        PriorityQueue<Task> realizableTasks = new PriorityQueue<Task>(instance.numJobs, comparator);
 
         //initialize the realizable tasks set with the first tasks of the jobs
         for(int j=0; j<instance.numJobs; j++) {
@@ -120,30 +122,42 @@ public class GreedySolver implements Solver {
             realizableTasks.add(task);
         }
 
-        while (realizableTasks.size() > 0) {
+        while (!realizableTasks.isEmpty()) {
 
             Task chosenRealizableTask = realizableTasks.poll();
 
-            int chosenRealizableTaskMachine = instance.machine(chosenRealizableTask.job, chosenRealizableTask.task);
+            int chosenRealizableTaskMachine = instance.machine(chosenRealizableTask);
 
             //add the chosen task to resource order
             sol.addTaskToResourceQueue(chosenRealizableTaskMachine, chosenRealizableTask.task, chosenRealizableTask.job);
 
             if(earliestStartTimeMode) {
                 //update the earliest start time of the realizable tasks after treating the chosen task
-                for (Task currentTask : realizableTasks) {
+                ArrayList<Task> tasksToUpdate = new ArrayList<Task>(instance.numJobs);
+                Iterator<Task> iter = realizableTasks.iterator();
+                while(iter.hasNext()) {
+                    Task currentTask = iter.next();
                     //update is necesseray only if a realizable task uses the same resource used by the chosen task
-                    if(instance.machine(currentTask.job, currentTask.task) == instance.machine(chosenRealizableTask.job, chosenRealizableTask.task)) {
+                    if(instance.machine(currentTask) == instance.machine(chosenRealizableTask)) {
                         setEarliestTaskStartDate(currentTask, sol, startTimes);
+                        //remove the task having a new earliest start time
+                        iter.remove();
+                        //save the task in a list to re-add it later
+                        tasksToUpdate.add(currentTask);
                     }
+                }
+                //re-add removed tasks to update them
+                for(Task currentTask : tasksToUpdate) {
+                    realizableTasks.add(currentTask);
                 }
             }
 
-            //add the chosen task successor to realizable tasks heap if it exists
+            //add the chosen task successor to the realizable tasks heap if it exists
             if(chosenRealizableTask.task+1 < instance.numTasks) {
                 Task newRealizableTask = new Task(chosenRealizableTask.job, chosenRealizableTask.task + 1);
                 if(earliestStartTimeMode) {
                     setEarliestTaskStartDate(newRealizableTask, sol, startTimes);
+
                 }
                 realizableTasks.add(newRealizableTask);
             }

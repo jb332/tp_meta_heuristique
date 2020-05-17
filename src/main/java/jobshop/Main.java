@@ -22,19 +22,10 @@ public class Main {
     /** All solvers available in this program */
     private static HashMap<String, Solver> solvers;
 
-    private static Constructor getConstructor(String className) {
-        Constructor constructor = null;
-        try {
-            Class solverClass = Class.forName(className);
-            constructor = solverClass.getDeclaredConstructors()[0];
-        } catch (ClassNotFoundException e) {}
-        return constructor;
-    }
-
     static {
         // modify parameters here
-        int tabooDuration = 20;
-        int maxIterations = Integer.MAX_VALUE; // the limit will be on the deadline, bad setting for testing because it is too random
+        int tabooDuration = 30;
+        int maxIterations = 1000;//Integer.MAX_VALUE; // the limit will be on the deadline, bad setting for testing because it is too random
 
         solvers = new HashMap<>();
         solvers.put("basic", new BasicSolver());
@@ -107,7 +98,6 @@ public class Main {
         PrintStream output = System.out;
 
         long solveTimeMs = ns.getLong("timeout") * 1000;
-        System.out.println(solveTimeMs);
 
         List<String> solversToTest = ns.getList("solver");
         for(String solverName : solversToTest) {

@@ -114,11 +114,11 @@ public class DescentSolver implements Solver {
         int bestMakespan = Integer.MAX_VALUE;
 
         ResourceOrder bestNeighborSolution = new ResourceOrder(solver.solve(instance, -1).schedule);
-        int bestNeighborMakeSpan = bestNeighborSolution.toSchedule().makespan();
+        int bestNeighborMakespan = bestNeighborSolution.toSchedule().makespan();
 
-        while(bestNeighborMakeSpan < bestMakespan && System.currentTimeMillis() < deadline) {
+        while(bestNeighborMakespan < bestMakespan && System.currentTimeMillis() < deadline) {
             bestSolution = bestNeighborSolution;
-            bestMakespan = bestNeighborMakeSpan;
+            bestMakespan = bestNeighborMakespan;
 
             List<Block> blocks = blocksOfCriticalPath(bestSolution);
             for(Block currentBlock : blocks) {
@@ -126,10 +126,10 @@ public class DescentSolver implements Solver {
                 for(Swap currentSwap : blockNeighbors) {
                     ResourceOrder currentNeighborSolution = bestSolution.copy();
                     currentSwap.applyOn(currentNeighborSolution);
-                    int currentNeighborMakeSpan = currentNeighborSolution.toSchedule().makespan();
-                    if(currentNeighborMakeSpan < bestNeighborMakeSpan) {
+                    int currentNeighborMakespan = currentNeighborSolution.toSchedule().makespan();
+                    if(currentNeighborMakespan < bestNeighborMakespan) {
                         bestNeighborSolution = currentNeighborSolution;
-                        bestNeighborMakeSpan = currentNeighborMakeSpan;
+                        bestNeighborMakespan = currentNeighborMakespan;
                     }
                 }
             }
